@@ -15,12 +15,22 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Коснтанты:
-# Максималная длинна заголовков
+# Коснтанты постов:
+# Максималная длинна заголовков.
 MAX_HEAD_LENGHT = 256
 
-# Лимит постов для выборки на главной странице
+# Лимит постов для выборки на главной странице.
 MAX_POSTS_LIMIT = 5
+
+# БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
+# Ссылка на кастомный класс пользователя.
+AUTH_USER_MODEL = 'users.BlogicumUser'
+
+# URL по умолчанию для аутентификации пользователя
+LOGIN_URL = 'login'
+
+# Редирект по умолчанию после авторизации
+LOGIN_REDIRECT_URL = 'blog:index'
 
 
 # Application definition
@@ -28,6 +38,7 @@ MAX_POSTS_LIMIT = 5
 INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'blog.apps.BlogConfig',
+    'users.apps.UsersConfig',
     'pages.apps.PagesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
