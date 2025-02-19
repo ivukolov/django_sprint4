@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
+handler404 = settings.HANDLER_404
+handler500 = settings.HANDLER_500
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
