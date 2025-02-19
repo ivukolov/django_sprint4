@@ -10,17 +10,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+vd_cums4@6iz^%s74*swn#(ib@d2rvje19udwn5s*j6legvaq'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
 # Коснтанты постов:
 # Максималная длинна заголовков.
 MAX_HEAD_LENGHT = 256
 
 # Лимит постов для выборки на главной странице.
 MAX_POSTS_LIMIT = 5
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
+
+#Параметры страниц с ошибками
+HANDLER_500 = 'core.views.internal_server_error'
+
+HANDLER_404 = 'core.views.page_not_found'
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 # БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
 # Ссылка на кастомный класс пользователя.
