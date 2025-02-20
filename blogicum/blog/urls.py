@@ -7,7 +7,7 @@ app_name = 'blog'
 urlpatterns = [
     path(
         '',
-        views.index,
+        views.IndexListView.as_view(),
         name='index'
     ),
     path(
@@ -24,5 +24,10 @@ urlpatterns = [
         'profile/<str:username>/',
         views.ProfileDetailView.as_view(),
         name='profile'
+    ),
+    path(
+        'posts/create/',
+        views.PostCreateView.as_view(),
+        name='create_post'
     )
 ]
