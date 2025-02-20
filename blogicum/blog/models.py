@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.urls import reverse
 
 from core.models import MetaModel
 
@@ -40,6 +41,10 @@ class Post(MetaModel):
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date',)
+
+    def get_absolute_url(self):
+        # С помощью функции reverse() возвращаем URL объекта.
+        return reverse('blog:index')
 
     def __str__(self):
         return self.title
