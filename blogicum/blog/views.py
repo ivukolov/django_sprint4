@@ -1,10 +1,17 @@
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponse
-from django.views.generic import DetailView
+from django.views.generic import DetailView, CreateView, ListView
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model
 
 from blog.shortcuts import get_posts_query, get_category
-from users.models import BlogicumUser
+from . models import Post
+from . forms import PostForm
+
+
+# Получаем модель пользователя.
+BlogicumUser = get_user_model()
 
 
 def index(request):
@@ -47,3 +54,19 @@ class ProfileDetailView(DetailView):
     def get_object(self, queryset=None):
         username = self.kwargs.get('username')
         return get_object_or_404(BlogicumUser, username=username)
+
+
+class PostCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/create.html'
+
+    def form_valid(self, form):
+        form.instance.author_id = self.request.user.id
+        return super().form_valid(form)
+
+
+class IndexListView(ListView):
+    model = Post
+    paginate_by = 10
+    template_name = 'blog/index.html'
