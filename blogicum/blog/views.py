@@ -48,13 +48,21 @@ def category_posts(request, category_slug: str):
 
 
 class ProfileDetailView(DetailView):
-    model = BlogicumUser
+    model = Post
     template_name = 'blog/profile.html'
     context_object_name = 'profile'
 
     def get_object(self, queryset=None):
         username = self.kwargs.get('username')
         return get_object_or_404(BlogicumUser, username=username)
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['test'] = (
+    #         # Дополнительно подгружаем авторов комментариев,
+    #         # чтобы избежать множества запросов к БД.
+    #         self.object.post.select_related('author')
+    #     )
 
 
 class PostCreateView(CreateView):
@@ -63,7 +71,7 @@ class PostCreateView(CreateView):
     template_name = 'blog/create.html'
 
     def form_valid(self, form):
-        form.instance.author_id = self.request.user.id
+        form.instance.author = self.request.user
         return super().form_valid(form)
 
 
@@ -77,7 +85,12 @@ class UserUpdateView(UpdateView):
     model = BlogicumUser
     form_class = BlogicumUserChangeForm
     template_name = 'blog/user.html'
-    success_url = reverse_lazy('blog:profile')
+    #success_url = reverse_lazy('blog:profile')
 
     def get_object(self, queryset=None):
         return self.request.user
+    
+    def get_success_url(self):
+        return reverse_lazy(
+            'blog:profile', kwargs={'username': self.username}
+        )
