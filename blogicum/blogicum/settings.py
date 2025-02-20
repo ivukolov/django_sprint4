@@ -34,7 +34,7 @@ CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 # БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
 # Ссылка на кастомный класс пользователя.
-AUTH_USER_MODEL = 'users.BlogicumUser'
+# AUTH_USER_MODEL = 'users.BlogicumUser'
 
 # URL по умолчанию для аутентификации пользователя
 LOGIN_URL = 'login'
