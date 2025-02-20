@@ -44,7 +44,8 @@ class Post(MetaModel):
 
     def get_absolute_url(self):
         # С помощью функции reverse() возвращаем URL объекта.
-        return reverse('blog:index')
+        # return reverse('blog:index')
+        return reverse('blog:profile', kwargs={'username': self.username})
 
     def __str__(self):
         return self.title
