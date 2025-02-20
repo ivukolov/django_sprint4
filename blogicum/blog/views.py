@@ -1,14 +1,15 @@
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
 from django.conf import settings
 from django.http import HttpResponse
-from django.views.generic import DetailView, CreateView, ListView
+from django.views.generic import DetailView, CreateView, ListView, UpdateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 
 from blog.shortcuts import get_posts_query, get_category
 from . models import Post
 from . forms import PostForm
-
+from users.forms import BlogicumUserChangeForm
 
 # Получаем модель пользователя.
 BlogicumUser = get_user_model()
@@ -70,3 +71,13 @@ class IndexListView(ListView):
     model = Post
     paginate_by = 10
     template_name = 'blog/index.html'
+
+
+class UserUpdateView(UpdateView):
+    model = BlogicumUser
+    form_class = BlogicumUserChangeForm
+    template_name = 'blog/user.html'
+    success_url = reverse_lazy('blog:profile')
+
+    def get_object(self, queryset=None):
+        return self.request.user
