@@ -1,7 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
+from django.http import HttpResponse
+from django.views.generic import DetailView
 
 from blog.shortcuts import get_posts_query, get_category
+from users.models import BlogicumUser
 
 
 def index(request):
@@ -34,3 +37,13 @@ def category_posts(request, category_slug: str):
         'category': category
     }
     return render(request, template, context=context)
+
+
+class ProfileDetailView(DetailView):
+    model = BlogicumUser
+    template_name = 'blog/profile.html'
+    context_object_name = 'profile'
+
+    def get_object(self, queryset=None):
+        username = self.kwargs.get('username')
+        return get_object_or_404(BlogicumUser, username=username)
