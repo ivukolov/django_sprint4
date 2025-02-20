@@ -16,6 +16,11 @@ urlpatterns = [
         name='post_detail'
     ),
     path(
+        'posts/create/',
+        views.PostCreateView.as_view(),
+        name='create_post'
+    ),
+    path(
         'category/<slug:category_slug>/',
         views.category_posts,
         name='category_posts'
@@ -26,8 +31,8 @@ urlpatterns = [
         name='profile'
     ),
     path(
-        'posts/create/',
-        views.PostCreateView.as_view(),
-        name='create_post'
-    )
+        'profile/<str:username>/edit/',
+        views.UserUpdateView.as_view(),
+        name='edit_profile'
+    ),
 ]
