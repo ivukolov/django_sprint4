@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-+vd_cums4@6iz^%s74*swn#(ib@d2rvje19udwn5s*j6legvaq
 MAX_HEAD_LENGHT = 256
 
 # Лимит постов для выборки на главной странице.
-MAX_POSTS_LIMIT = 5
+MAX_POSTS_LIMIT = 10
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
