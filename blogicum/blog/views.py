@@ -8,8 +8,8 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 
 from blog.shortcuts import get_posts_query, get_category
-from . models import Post
-from . forms import PostForm
+from . models import Post, Comment
+from . forms import PostForm, CommentForm
 from users.forms import BlogicumUserChangeForm
 
 # Получаем модель пользователя.
@@ -106,3 +106,20 @@ class PostDetailView(DetailView):
         pk = self.kwargs.get('post_id')
         print(pk)
         return get_object_or_404(Post, pk=pk)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        return context
+
+
+class CommentCreateView(CreateView):
+    model = Comment
+    form_class = CommentForm
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('blog:post_detail', kwargs={'pk': self.author.pk})
