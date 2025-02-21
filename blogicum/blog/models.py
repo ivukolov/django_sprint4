@@ -84,3 +84,12 @@ class Location(MetaModel):
 
     def __str__(self):
         return self.name
+
+
+class Comment(models.Model):
+    text = models.TextField('Текст коментария')
+    created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('created_at',)
