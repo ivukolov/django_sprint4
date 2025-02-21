@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.views.generic import DetailView, CreateView, ListView, UpdateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
 
 from blog.shortcuts import get_posts_query, get_category
 from . models import Post
@@ -48,21 +49,23 @@ def category_posts(request, category_slug: str):
 
 
 class ProfileDetailView(DetailView):
-    model = Post
+    model = BlogicumUser
     template_name = 'blog/profile.html'
     context_object_name = 'profile'
+    # queryset = Author.objects.all()
 
     def get_object(self, queryset=None):
         username = self.kwargs.get('username')
         return get_object_or_404(BlogicumUser, username=username)
-    
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['test'] = (
-    #         # Дополнительно подгружаем авторов комментариев,
-    #         # чтобы избежать множества запросов к БД.
-    #         self.object.post.select_related('author')
-    #     )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        posts = Post.objects.filter(author=self.object.pk)
+        paginator = Paginator(posts, settings.MAX_POSTS_LIMIT)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        return context
 
 
 class PostCreateView(CreateView):
@@ -77,7 +80,7 @@ class PostCreateView(CreateView):
 
 class IndexListView(ListView):
     model = Post
-    paginate_by = 10
+    paginate_by = settings.MAX_POSTS_LIMIT
     template_name = 'blog/index.html'
 
 
@@ -85,12 +88,21 @@ class UserUpdateView(UpdateView):
     model = BlogicumUser
     form_class = BlogicumUserChangeForm
     template_name = 'blog/user.html'
-    #success_url = reverse_lazy('blog:profile')
 
     def get_object(self, queryset=None):
         return self.request.user
-    
+
     def get_success_url(self):
         return reverse_lazy(
             'blog:profile', kwargs={'username': self.username}
         )
+
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/detail.html'
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get('post_id')
+        print(pk)
+        return get_object_or_404(Post, pk=pk)
