@@ -103,23 +103,28 @@ class PostDetailView(DetailView):
     template_name = 'blog/detail.html'
 
     def get_object(self, queryset=None):
-        pk = self.kwargs.get('post_id')
-        print(pk)
-        return get_object_or_404(Post, pk=pk)
+        return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
+        context['comments'] = Comment.objects.filter(post=self.kwargs.get('post_id'))
         return context
 
 
 class CommentCreateView(CreateView):
+    post_model = None
     model = Comment
     form_class = CommentForm
 
+    def dispatch(self, request, *args, **kwargs):
+        self.post_model = get_object_or_404(Post, pk=kwargs['post_id'])
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.author = self.request.user
+        form.instance.post = self.post_model
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('blog:post_detail', kwargs={'pk': self.author.pk})
+        return reverse_lazy('blog:post_detail', kwargs={'post_id': self.post_model.id})
