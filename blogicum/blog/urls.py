@@ -16,6 +16,11 @@ urlpatterns = [
         name='post_detail'
     ),
     path(
+        'posts/<int:post_id>/comment',
+        views.CommentCreateView.as_view(),
+        name='add_comment'
+    ),
+    path(
         'posts/create/',
         views.PostCreateView.as_view(),
         name='create_post'
