@@ -6,6 +6,7 @@ from django.views.generic import DetailView, CreateView, ListView, UpdateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
+from django.db.models import Count
 
 from blog.shortcuts import get_posts_query, get_category
 from . models import Post, Comment
@@ -16,24 +17,24 @@ from users.forms import BlogicumUserChangeForm
 BlogicumUser = get_user_model()
 
 
-def index(request):
-    """Главная страница проекта."""
-    post_list = get_posts_query()
-    template = 'blog/index.html'
-    context = {
-        'post_list': post_list[:settings.MAX_POSTS_LIMIT]
-    }
-    return render(request, template, context=context)
+# def index(request):
+#     """Главная страница проекта."""
+#     post_list = get_posts_query()
+#     template = 'blog/index.html'
+#     context = {
+#         'post_list': post_list[:settings.MAX_POSTS_LIMIT]
+#     }
+#     return render(request, template, context=context)
 
 
-def post_detail(request, post_id: int):
-    """Более развёрнутое представление поста."""
-    template = 'blog/detail.html'
-    post = get_object_or_404(get_posts_query(), pk=post_id)
-    context: dict = {
-        'post': post
-    }
-    return render(request, template, context=context)
+# def post_detail(request, post_id: int):
+#     """Более развёрнутое представление поста."""
+#     template = 'blog/detail.html'
+#     post = get_object_or_404(get_posts_query(), pk=post_id)
+#     context: dict = {
+#         'post': post
+#     }
+#     return render(request, template, context=context)
 
 
 def category_posts(request, category_slug: str):
@@ -83,6 +84,16 @@ class IndexListView(ListView):
     paginate_by = settings.MAX_POSTS_LIMIT
     template_name = 'blog/index.html'
 
+    def get_queryset(self):
+        return Post.objects.prefetch_related(
+            'comments'
+        ).annotate(comment_count=Count('comments'))
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['comment_count'] = Comment.objects.count()
+    #     return context
+
 
 class UserUpdateView(UpdateView):
     model = BlogicumUser
@@ -110,6 +121,13 @@ class PostDetailView(DetailView):
         context['form'] = CommentForm()
         context['comments'] = Comment.objects.filter(post=self.kwargs.get('post_id'))
         return context
+
+
+class PostUpdateView(UpdateView):
+    template_name = 'blog/create.html'
+    model = Post
+    form_class = PostForm
+    pk_url_kwarg ='post_id'
 
 
 class CommentCreateView(CreateView):
