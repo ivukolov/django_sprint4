@@ -11,19 +11,24 @@ urlpatterns = [
         name='index'
     ),
     path(
+        'posts/create/',
+        views.PostCreateView.as_view(),
+        name='create_post'
+    ),
+    path(
         'posts/<int:post_id>/',
         views.PostDetailView.as_view(),
         name='post_detail'
     ),
     path(
+        'posts/<int:post_id>/edit/',
+        views.PostUpdateView.as_view(),
+        name='edit_post'
+    ),
+    path(
         'posts/<int:post_id>/comment',
         views.CommentCreateView.as_view(),
         name='add_comment'
-    ),
-    path(
-        'posts/create/',
-        views.PostCreateView.as_view(),
-        name='create_post'
     ),
     path(
         'category/<slug:category_slug>/',
