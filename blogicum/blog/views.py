@@ -2,7 +2,13 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.conf import settings
 from django.http import HttpResponse
-from django.views.generic import DetailView, CreateView, ListView, UpdateView
+from django.views.generic import (
+    DetailView, 
+    CreateView, 
+    ListView, 
+    UpdateView, 
+    DeleteView
+    )
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
@@ -124,16 +130,26 @@ class PostDetailView(DetailView):
 
 
 class PostUpdateView(UpdateView):
+    """Класс для измения постов"""
+
     template_name = 'blog/create.html'
     model = Post
     form_class = PostForm
-    pk_url_kwarg ='post_id'
+    pk_url_kwarg = 'post_id'
+
+
+class PostDeleteView(DeleteView):
+    """Класс для удаления постов"""
+    template_name = 'blog/create.html'
+    model = Post
+    pk_url_kwarg = 'post_id'
 
 
 class CommentCreateView(CreateView):
     post_model = None
     model = Comment
     form_class = CommentForm
+    pk_url_kwarg = 'post_id'
 
     def dispatch(self, request, *args, **kwargs):
         self.post_model = get_object_or_404(Post, pk=kwargs['post_id'])
@@ -146,3 +162,11 @@ class CommentCreateView(CreateView):
 
     def get_success_url(self):
         return reverse_lazy('blog:post_detail', kwargs={'post_id': self.post_model.id})
+    
+
+class CommentUpdateView(UpdateView):
+    """Класс редактирования комментария"""
+    template_name = 'blog/comment.html'
+    model = Comment
+    form_class = CommentForm
+    pk_url_kwarg = 'comment_id'
