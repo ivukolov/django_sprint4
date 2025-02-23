@@ -43,8 +43,6 @@ class Post(MetaModel):
         ordering = ('-pub_date',)
 
     def get_absolute_url(self):
-        # С помощью функции reverse() возвращаем URL объекта.
-        # return reverse('blog:index')
         return reverse(
             'blog:profile', kwargs={'username': self.author.username}
         )
@@ -94,3 +92,8 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('created_at',)
+
+    def get_absolute_url(self):
+        return reverse(
+            'blog:post_detail', kwargs={'post_id': self.post.id}
+        )
