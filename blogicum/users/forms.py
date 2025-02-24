@@ -11,6 +11,7 @@ class BlogicumUserCreationForm(UserCreationForm):
     # Так этот класс будет не перезаписан, а расширен.
     class Meta(UserCreationForm.Meta):
         model = User
+        fields = ('first_name', 'last_name', 'username', 'email',)
 
 
 class BlogicumUserChangeForm(ModelForm):
