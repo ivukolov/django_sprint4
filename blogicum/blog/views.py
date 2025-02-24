@@ -10,7 +10,8 @@ from django.views.generic import (
     )
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.utils import timezone
 
 from . models import Post, Comment, Category
 from . forms import PostForm, CommentForm
@@ -39,6 +40,10 @@ class ListViewMixin:
             comment_count=Count('comments')
         ).order_by(*Post._meta.ordering)
 
+    def _get_cdate(self):
+        """Метод для определения текущего времени."""
+        return timezone.now()
+
 
 class ProfileDetailView(ListViewMixin, ListView):
     """Класс для отображения страницы пользователя"""
@@ -56,7 +61,7 @@ class ProfileDetailView(ListViewMixin, ListView):
         return context
 
 
-class PostCreateView(OnlyAuthorMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView,):
     """Класс для создания постов"""
 
     model = Post
@@ -72,6 +77,13 @@ class IndexListView(ListViewMixin, ListView):
     """Класс для представления главной страницы"""
 
     template_name = 'blog/index.html'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            pub_date__lte=self._get_cdate(),
+            is_published=True,
+            category__is_published=True
+        )
 
 
 class UserUpdateView(OnlyAuthorMixin, UpdateView):
@@ -132,7 +144,7 @@ class PostDeleteView(OnlyAuthorMixin, DeleteView):
         return context
 
 
-class CommentCreateView(OnlyAuthorMixin, CreateView):
+class CommentCreateView(LoginRequiredMixin, CreateView):
     """Класс для создания комментариев к посту"""
 
     post_model = None
