@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.views.generic import (
     DetailView,
@@ -27,6 +28,9 @@ class OnlyAuthorMixin(UserPassesTestMixin):
     def test_func(self):
         object = self.get_object()
         return object.author == self.request.user
+    
+    def handle_no_permission(self):
+        return redirect('blog:post_detail', post_id=self.kwargs.get('post_id'))
 
 
 class ListViewMixin:
