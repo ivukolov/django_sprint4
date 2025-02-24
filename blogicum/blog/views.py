@@ -1,20 +1,16 @@
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.conf import settings
-from django.http import HttpResponse
 from django.views.generic import (
-    DetailView, 
-    CreateView, 
-    ListView, 
-    UpdateView, 
+    DetailView,
+    CreateView,
+    ListView,
+    UpdateView,
     DeleteView
     )
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
 from django.db.models import Count
 
-from blog.shortcuts import get_posts_query, get_category
 from . models import Post, Comment, Category
 from . forms import PostForm, CommentForm
 from users.forms import BlogicumUserChangeForm
@@ -24,6 +20,8 @@ BlogicumUser = get_user_model()
 
 
 class ListViewMixin:
+    """Миксин для отображения спсика постов"""
+
     model = Post
     paginate_by = settings.MAX_POSTS_LIMIT
 
@@ -33,27 +31,25 @@ class ListViewMixin:
         ).order_by(*Post._meta.ordering)
 
 
-def category_posts(request, category_slug: str):
-    """Фильтрация постов по категории."""
-    template = 'blog/category.html'
-    category = get_category(category_slug)
-    posts = get_posts_query().filter(category__slug=category_slug)
-    context = {
-        'post_list': posts,
-        'category': category
-    }
-    return render(request, template, context=context)
-
-
 class ProfileDetailView(ListViewMixin, ListView):
-    """Класс страницы пользователя"""
+    """Класс для отображения страницы пользователя"""
+
     template_name = 'blog/profile.html'
 
     def get_queryset(self):
         return super().get_queryset().filter(author=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profile'] = BlogicumUser.objects.get(
+            username=self.request.user
+        )
+        return context
+
 
 class PostCreateView(CreateView):
+    """Класс для создания постов"""
+
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
@@ -64,10 +60,14 @@ class PostCreateView(CreateView):
 
 
 class IndexListView(ListViewMixin, ListView):
+    """Класс для представления главной страницы"""
+
     template_name = 'blog/index.html'
-    
+
 
 class UserUpdateView(UpdateView):
+    """Класс для обновление страницы пользователя"""
+
     model = BlogicumUser
     form_class = BlogicumUserChangeForm
     template_name = 'blog/user.html'
@@ -82,16 +82,20 @@ class UserUpdateView(UpdateView):
 
 
 class PostDetailView(DetailView):
+    """Класс для развёрнутого представения поста"""
+
     model = Post
     template_name = 'blog/detail.html'
 
     def get_object(self, queryset=None):
         return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
-        context['comments'] = Comment.objects.filter(post=self.kwargs.get('post_id'))
+        context['comments'] = Comment.objects.filter(
+            post=self.kwargs.get('post_id')
+        )
         return context
 
 
@@ -120,6 +124,8 @@ class PostDeleteView(DeleteView):
 
 
 class CommentCreateView(CreateView):
+    """Класс для создания комментариев к посту"""
+
     post_model = None
     model = Comment
     form_class = CommentForm
@@ -135,11 +141,14 @@ class CommentCreateView(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('blog:post_detail', kwargs={'post_id': self.post_model.id})
-    
+        return reverse_lazy(
+            'blog:post_detail', kwargs={'post_id': self.post_model.id}
+        )
+
 
 class CommentUpdateView(UpdateView):
     """Класс редактирования комментария"""
+
     template_name = 'blog/comment.html'
     model = Comment
     form_class = CommentForm
@@ -153,6 +162,7 @@ class CommentUpdateView(UpdateView):
 
 class CommentDeleteView(DeleteView):
     """Класс удаления комментария"""
+
     template_name = 'blog/comment.html'
     model = Comment
     form_class = CommentForm
@@ -172,7 +182,9 @@ class CategoryListView(ListViewMixin, ListView):
     pk_url_kwarg = 'category_slug'
 
     def dispatch(self, request, *args, **kwargs):
-        self.category = get_object_or_404(Category, slug=kwargs['category_slug'])
+        self.category = get_object_or_404(
+            Category, slug=kwargs['category_slug']
+        )
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
