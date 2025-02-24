@@ -34,7 +34,8 @@ class Post(MetaModel):
         'Category',
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name='Категория'
+        verbose_name='Категория',
+        related_name='posts'
     )
 
     class Meta:
@@ -95,5 +96,5 @@ class Comment(models.Model):
 
     def get_absolute_url(self):
         return reverse(
-            'blog:post_detail', kwargs={'post_id': self.post.id}
+            'blog:profile', kwargs={'username': self.author.username}
         )
