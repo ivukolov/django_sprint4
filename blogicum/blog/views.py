@@ -10,6 +10,7 @@ from django.views.generic import (
     )
 from django.contrib.auth import get_user_model
 from django.db.models import Count
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 from . models import Post, Comment, Category
 from . forms import PostForm, CommentForm
@@ -19,8 +20,16 @@ from users.forms import BlogicumUserChangeForm
 BlogicumUser = get_user_model()
 
 
+class OnlyAuthorMixin(UserPassesTestMixin):
+    """Класс для подмешивания проверки доступа"""
+
+    def test_func(self):
+        object = self.get_object()
+        return object.author == self.request.user
+
+
 class ListViewMixin:
-    """Миксин для отображения спсика постов"""
+    """"Класс для подмешивания спсика постов"""
 
     model = Post
     paginate_by = settings.MAX_POSTS_LIMIT
@@ -47,7 +56,7 @@ class ProfileDetailView(ListViewMixin, ListView):
         return context
 
 
-class PostCreateView(CreateView):
+class PostCreateView(OnlyAuthorMixin, CreateView):
     """Класс для создания постов"""
 
     model = Post
@@ -65,7 +74,7 @@ class IndexListView(ListViewMixin, ListView):
     template_name = 'blog/index.html'
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(OnlyAuthorMixin, UpdateView):
     """Класс для обновление страницы пользователя"""
 
     model = BlogicumUser
@@ -99,7 +108,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostUpdateView(UpdateView):
+class PostUpdateView(OnlyAuthorMixin, UpdateView):
     """Класс для измения постов"""
 
     template_name = 'blog/create.html'
@@ -109,7 +118,7 @@ class PostUpdateView(UpdateView):
     success_url = reverse_lazy('blog:index')
 
 
-class PostDeleteView(DeleteView):
+class PostDeleteView(OnlyAuthorMixin, DeleteView):
     """Класс для удаления постов"""
 
     template_name = 'blog/create.html'
@@ -123,7 +132,7 @@ class PostDeleteView(DeleteView):
         return context
 
 
-class CommentCreateView(CreateView):
+class CommentCreateView(OnlyAuthorMixin, CreateView):
     """Класс для создания комментариев к посту"""
 
     post_model = None
@@ -146,7 +155,7 @@ class CommentCreateView(CreateView):
         )
 
 
-class CommentUpdateView(UpdateView):
+class CommentUpdateView(OnlyAuthorMixin, UpdateView):
     """Класс редактирования комментария"""
 
     template_name = 'blog/comment.html'
@@ -160,7 +169,7 @@ class CommentUpdateView(UpdateView):
         )
 
 
-class CommentDeleteView(DeleteView):
+class CommentDeleteView(OnlyAuthorMixin, DeleteView):
     """Класс удаления комментария"""
 
     template_name = 'blog/comment.html'
