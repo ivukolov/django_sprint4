@@ -32,20 +32,7 @@ HANDLER_404 = 'core.views.page_not_found'
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
-# БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
-# Ссылка на кастомный класс пользователя.
-# AUTH_USER_MODEL = 'users.BlogicumUser'
-
-# URL по умолчанию для аутентификации пользователя
-LOGIN_URL = 'login'
-
-# Редирект по умолчанию после авторизации
-LOGIN_REDIRECT_URL = 'blog:index'
-
-
-# Параметры для медиаресурсов.
-MEDIA_ROOT = BASE_DIR / 'media'
-
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 # Application definition
 
 INSTALLED_APPS = [
@@ -148,11 +135,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
+# БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
+# Ссылка на кастомный класс пользователя.
+# AUTH_USER_MODEL = 'users.BlogicumUser'
+
+# URL по умолчанию для аутентификации пользователя
+LOGIN_URL = 'login'
+
+# Редирект по умолчанию после авторизации
+LOGIN_REDIRECT_URL = 'blog:index'
+
 STATIC_URL = '/static/'
 
+# Параметры для статических ресурсов
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Параметры для медиаресурсов.
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Дериктория для сохранения писем
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
