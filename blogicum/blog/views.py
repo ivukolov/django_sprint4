@@ -52,16 +52,19 @@ class ListViewMixin:
 class ProfileDetailView(ListViewMixin, ListView):
     """Класс для отображения страницы пользователя"""
 
+    user_model = None
     template_name = 'blog/profile.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        self.user_model = get_object_or_404(BlogicumUser, username=kwargs['username'])
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        return super().get_queryset().filter(author=self.request.user)
+        return super().get_queryset().filter(author=self.user_model.id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['profile'] = BlogicumUser.objects.get(
-            username=self.request.user
-        )
+        context['profile'] = self.user_model
         return context
 
 
