@@ -15,7 +15,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 
 from blog.shortcuts import get_posts_query, get_category
-from . models import Post, Comment
+from . models import Post, Comment, Category
 from . forms import PostForm, CommentForm
 from users.forms import BlogicumUserChangeForm
 
@@ -140,9 +140,15 @@ class PostUpdateView(UpdateView):
 
 class PostDeleteView(DeleteView):
     """Класс для удаления постов"""
+
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = PostForm(instance=self.get_object())
+        return context
 
 
 class CommentCreateView(CreateView):
@@ -170,3 +176,43 @@ class CommentUpdateView(UpdateView):
     model = Comment
     form_class = CommentForm
     pk_url_kwarg = 'comment_id'
+
+
+class CommentDeleteView(DeleteView):
+    """Класс удаления комментария"""
+    template_name = 'blog/comment.html'
+    model = Comment
+    form_class = CommentForm
+    pk_url_kwarg = 'comment_id'
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'blog:post_detail', kwargs={'post_id': self.object.id}
+        )
+
+
+class CategoryListView(ListView):
+    """Класс для отображения категорий"""
+
+    category = None
+    template_name = 'blog/category.html'
+    model = Post
+    pk_url_kwarg = 'category_slug'
+    paginate_by = settings.MAX_POSTS_LIMIT
+
+    def dispatch(self, request, *args, **kwargs):
+        self.category = get_object_or_404(Category, slug=kwargs['category_slug'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        print(context['category'])
+        return context
+    
+    def get_queryset(self):
+        return Post.objects.prefetch_related(
+            'comments'
+        ).filter(category=self.category.pk).annotate(
+            comment_count=Count('comments')
+        )
