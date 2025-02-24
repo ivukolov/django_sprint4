@@ -8,12 +8,12 @@ app_name = 'pages'
 urlpatterns = [
     path(
         'about/',
-        views.about,
+        views.About.as_view(),
         name='about'
     ),
     path(
         'rules/',
-        views.rules,
+        views.Rules.as_view(),
         name='rules'
     )
 ]
