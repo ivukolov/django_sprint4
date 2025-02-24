@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.views.generic import (
@@ -23,24 +23,14 @@ from users.forms import BlogicumUserChangeForm
 BlogicumUser = get_user_model()
 
 
-# def index(request):
-#     """Главная страница проекта."""
-#     post_list = get_posts_query()
-#     template = 'blog/index.html'
-#     context = {
-#         'post_list': post_list[:settings.MAX_POSTS_LIMIT]
-#     }
-#     return render(request, template, context=context)
+class ListViewMixin:
+    model = Post
+    paginate_by = settings.MAX_POSTS_LIMIT
 
-
-# def post_detail(request, post_id: int):
-#     """Более развёрнутое представление поста."""
-#     template = 'blog/detail.html'
-#     post = get_object_or_404(get_posts_query(), pk=post_id)
-#     context: dict = {
-#         'post': post
-#     }
-#     return render(request, template, context=context)
+    def get_queryset(self):
+        return Post.objects.annotate(
+            comment_count=Count('comments')
+        ).order_by(*Post._meta.ordering)
 
 
 def category_posts(request, category_slug: str):
@@ -55,24 +45,12 @@ def category_posts(request, category_slug: str):
     return render(request, template, context=context)
 
 
-class ProfileDetailView(DetailView):
-    model = BlogicumUser
+class ProfileDetailView(ListViewMixin, ListView):
+    """Класс страницы пользователя"""
     template_name = 'blog/profile.html'
-    context_object_name = 'profile'
-    # queryset = Author.objects.all()
 
-    def get_object(self, queryset=None):
-        username = self.kwargs.get('username')
-        return get_object_or_404(BlogicumUser, username=username)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        posts = Post.objects.filter(author=self.object.pk)
-        paginator = Paginator(posts, settings.MAX_POSTS_LIMIT)
-        page_number = self.request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context['page_obj'] = page_obj
-        return context
+    def get_queryset(self):
+        return super().get_queryset().filter(author=self.request.user)
 
 
 class PostCreateView(CreateView):
@@ -85,21 +63,9 @@ class PostCreateView(CreateView):
         return super().form_valid(form)
 
 
-class IndexListView(ListView):
-    model = Post
-    paginate_by = settings.MAX_POSTS_LIMIT
+class IndexListView(ListViewMixin, ListView):
     template_name = 'blog/index.html'
-
-    def get_queryset(self):
-        return Post.objects.prefetch_related(
-            'comments'
-        ).annotate(comment_count=Count('comments'))
-
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['comment_count'] = Comment.objects.count()
-    #     return context
-
+    
 
 class UserUpdateView(UpdateView):
     model = BlogicumUser
@@ -136,6 +102,7 @@ class PostUpdateView(UpdateView):
     model = Post
     form_class = PostForm
     pk_url_kwarg = 'post_id'
+    success_url = reverse_lazy('blog:index')
 
 
 class PostDeleteView(DeleteView):
@@ -144,6 +111,7 @@ class PostDeleteView(DeleteView):
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
+    success_url = reverse_lazy('blog:index')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -177,6 +145,11 @@ class CommentUpdateView(UpdateView):
     form_class = CommentForm
     pk_url_kwarg = 'comment_id'
 
+    def get_success_url(self):
+        return reverse_lazy(
+            'blog:post_detail', kwargs={'post_id': self.object.post.id}
+        )
+
 
 class CommentDeleteView(DeleteView):
     """Класс удаления комментария"""
@@ -187,18 +160,16 @@ class CommentDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:post_detail', kwargs={'post_id': self.object.id}
+            'blog:post_detail', kwargs={'post_id': self.object.post.id}
         )
 
 
-class CategoryListView(ListView):
+class CategoryListView(ListViewMixin, ListView):
     """Класс для отображения категорий"""
 
     category = None
     template_name = 'blog/category.html'
-    model = Post
     pk_url_kwarg = 'category_slug'
-    paginate_by = settings.MAX_POSTS_LIMIT
 
     def dispatch(self, request, *args, **kwargs):
         self.category = get_object_or_404(Category, slug=kwargs['category_slug'])
@@ -209,10 +180,3 @@ class CategoryListView(ListView):
         context['category'] = self.category
         print(context['category'])
         return context
-    
-    def get_queryset(self):
-        return Post.objects.prefetch_related(
-            'comments'
-        ).filter(category=self.category.pk).annotate(
-            comment_count=Count('comments')
-        )
