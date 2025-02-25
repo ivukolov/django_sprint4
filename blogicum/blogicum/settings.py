@@ -26,9 +26,6 @@ ALLOWED_HOSTS = [
 ]
 
 #Параметры страниц с ошибками
-HANDLER_500 = 'core.views.internal_server_error'
-
-HANDLER_404 = 'core.views.page_not_found'
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
@@ -136,8 +133,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 # БЛОК СВЯЗАННЫЙ С РЕГИСТРАЦИЕЙ ПОЛЬЗОВАТЕЛЕЙ
-# Ссылка на кастомный класс пользователя.
-# AUTH_USER_MODEL = 'users.BlogicumUser'
 
 # URL по умолчанию для аутентификации пользователя
 LOGIN_URL = 'login'
