@@ -3,8 +3,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-handler404 = settings.HANDLER_404
-handler500 = settings.HANDLER_500
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,6 +10,9 @@ urlpatterns = [
     path('auth/', include('users.urls')),
     path('pages/', include('pages.urls')),
 ]
+
+handler404 = 'core.views.page_not_found'
+handler500 = 'core.views.custom_500'
 
 if settings.DEBUG:
     import debug_toolbar
