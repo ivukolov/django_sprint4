@@ -11,7 +11,10 @@ from django.views.generic import (
     )
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth.mixins import (UserPassesTestMixin,
+                                        LoginRequiredMixin,
+                                        PermissionRequiredMixin,
+                                        AccessMixin,)
 from django.utils import timezone
 
 from . models import Post, Comment, Category
@@ -105,7 +108,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:profile', kwargs={'username': self.username}
+            'blog:profile', kwargs={'username': self.request.user}
         )
 
 
@@ -205,15 +208,24 @@ class CommentDeleteView(OnlyAuthorMixin, DeleteView):
 class CategoryListView(ListViewMixin, ListView):
     """Класс для отображения категорий"""
 
+    model = Category
     category = None
     template_name = 'blog/category.html'
-    pk_url_kwarg = 'category_slug'
+    slug_url_kwarg = 'category_slug'
 
     def dispatch(self, request, *args, **kwargs):
         self.category = get_object_or_404(
             Category, slug=kwargs['category_slug']
         )
         return super().dispatch(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            pub_date__lte=self._get_cdate(),
+            is_published=True,
+            category__is_published=True,
+            category=self.category
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
