@@ -255,6 +255,8 @@ class CategoryListView(ListViewMixin, ListView):
         self.category = get_object_or_404(
             Category, slug=kwargs['category_slug']
         )
+        if not self.category.is_published:
+            raise Http404
         return super().dispatch(request, *args, **kwargs)
     
     def get_queryset(self):
