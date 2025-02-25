@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
+from django.http import HttpResponse, Http404
 from django.views.generic import (
     DetailView,
     CreateView,
@@ -117,9 +118,38 @@ class PostDetailView(DetailView):
 
     model = Post
     template_name = 'blog/detail.html'
+    pk_url_kwarg = 'post_id'
+    success_url = reverse_lazy('blog:index')
+
+
+    def get_queryset(self):
+        return super().get_queryset()
 
     def get_object(self, queryset=None):
-        return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        obj = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        if obj.author == self.request.user:
+            return obj
+        data = Post.objects.filter(
+            pk=self.kwargs.get('post_id'),
+            pub_date__lte=timezone.now(),
+            is_published=True,
+            category__is_published=True
+        )
+        return get_object_or_404(data)
+        
+
+        # return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+    #     post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+    #     if post.author != self.request.user:
+    #         return post
+    #     result = post.filter()
+        # if not post.category.is_published and post.author != self.request.user:
+        #     raise Http404
+        # if not post.category.is_published and post.author != self.request.user:
+        #     raise Http404
+        # if not post.is_published and post.author != self.request.user:
+        #     raise Http404
+        # return post
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -138,6 +168,14 @@ class PostUpdateView(OnlyAuthorMixin, UpdateView):
     form_class = PostForm
     pk_url_kwarg = 'post_id'
     success_url = reverse_lazy('blog:index')
+
+    def get_object(self, queryset=None):
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        if not post.category.is_published and post.author != self.request.user:
+            raise Http404
+        if not post.is_published and post.author != self.request.user:
+            raise Http404
+        return post
 
 
 class PostDeleteView(OnlyAuthorMixin, DeleteView):
