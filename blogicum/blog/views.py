@@ -93,7 +93,7 @@ class IndexListView(ListViewMixin, ListView):
         )
 
 
-class UserUpdateView(OnlyAuthorMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     """Класс для обновление страницы пользователя"""
 
     model = BlogicumUser
