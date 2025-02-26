@@ -27,7 +27,7 @@ ALLOWED_HOSTS = [
 
 #Параметры страниц с ошибками
 
-CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 # Application definition
