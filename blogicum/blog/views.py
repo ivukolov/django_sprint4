@@ -66,7 +66,9 @@ class ListViewMixin(TimeGetMixin):
     paginate_by = settings.MAX_POSTS_LIMIT
 
     def get_queryset(self):
-        return Post.objects.annotate(
+        return Post.objects.select_related(
+            'author', 'location', 'category'
+        ).annotate(
             comment_count=Count('comments')
         ).order_by(*Post._meta.ordering)
 
@@ -157,7 +159,6 @@ class PostUpdateView(OnlyAuthorUpdateMixin, OnlyAuthorMixin, UpdateView):
     form_class = PostForm
     pk_url_kwarg = 'post_id'
     success_url = reverse_lazy('blog:index')
-
 
 
 class PostDeleteView(OnlyAuthorMixin, DeleteView):
