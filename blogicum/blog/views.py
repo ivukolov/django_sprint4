@@ -1,21 +1,19 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.conf import settings
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.views.generic import (
     DetailView,
     CreateView,
     ListView,
     UpdateView,
     DeleteView
-    )
+)
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.contrib.auth.mixins import (UserPassesTestMixin,
-                                        LoginRequiredMixin,
-                                        PermissionRequiredMixin,
-                                        AccessMixin,)
+                                        LoginRequiredMixin,)
 from django.utils import timezone
 
 from . models import Post, Comment, Category
@@ -32,12 +30,36 @@ class OnlyAuthorMixin(UserPassesTestMixin):
     def test_func(self):
         object = self.get_object()
         return object.author == self.request.user
-    
+
     def handle_no_permission(self):
         return redirect('blog:post_detail', post_id=self.kwargs.get('post_id'))
 
 
-class ListViewMixin:
+class TimeGetMixin:
+    """Миксин для определения текущего времени."""
+
+    def _get_cdate(self):
+        return timezone.now()
+
+
+class OnlyAuthorUpdateMixin(TimeGetMixin):
+    """Миксин для подмешивания проверки авторства и валидности данных"""
+
+    def get_object(self, queryset=None):
+        obj = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        print(obj.category.is_published)
+        if obj.author == self.request.user:
+            return obj
+        if (
+            obj.pub_date <= self._get_cdate()
+            and obj.is_published
+            and obj.category.is_published
+        ):
+            return obj
+        raise Http404
+
+
+class ListViewMixin(TimeGetMixin):
     """"Класс для подмешивания спсика постов"""
 
     model = Post
@@ -48,10 +70,6 @@ class ListViewMixin:
             comment_count=Count('comments')
         ).order_by(*Post._meta.ordering)
 
-    def _get_cdate(self):
-        """Метод для определения текущего времени."""
-        return timezone.now()
-
 
 class ProfileDetailView(ListViewMixin, ListView):
     """Класс для отображения страницы пользователя"""
@@ -60,7 +78,8 @@ class ProfileDetailView(ListViewMixin, ListView):
     template_name = 'blog/profile.html'
 
     def dispatch(self, request, *args, **kwargs):
-        self.user_model = get_object_or_404(BlogicumUser, username=kwargs['username'])
+        self.user_model = get_object_or_404(
+            BlogicumUser, username=kwargs['username'])
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -84,7 +103,7 @@ class PostCreateView(LoginRequiredMixin, CreateView,):
         return super().form_valid(form)
 
 
-class IndexListView(ListViewMixin, ListView):
+class IndexListView(OnlyAuthorUpdateMixin, ListViewMixin, ListView):
     """Класс для представления главной страницы"""
 
     template_name = 'blog/index.html'
@@ -113,43 +132,13 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         )
 
 
-class PostDetailView(DetailView):
+class PostDetailView(OnlyAuthorUpdateMixin, DetailView):
     """Класс для развёрнутого представения поста"""
 
     model = Post
     template_name = 'blog/detail.html'
     pk_url_kwarg = 'post_id'
     success_url = reverse_lazy('blog:index')
-
-
-    def get_queryset(self):
-        return super().get_queryset()
-
-    def get_object(self, queryset=None):
-        obj = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        if obj.author == self.request.user:
-            return obj
-        data = Post.objects.filter(
-            pk=self.kwargs.get('post_id'),
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True
-        )
-        return get_object_or_404(data)
-        
-
-        # return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-    #     post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-    #     if post.author != self.request.user:
-    #         return post
-    #     result = post.filter()
-        # if not post.category.is_published and post.author != self.request.user:
-        #     raise Http404
-        # if not post.category.is_published and post.author != self.request.user:
-        #     raise Http404
-        # if not post.is_published and post.author != self.request.user:
-        #     raise Http404
-        # return post
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -160,7 +149,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostUpdateView(OnlyAuthorMixin, UpdateView):
+class PostUpdateView(OnlyAuthorUpdateMixin, OnlyAuthorMixin, UpdateView):
     """Класс для измения постов"""
 
     template_name = 'blog/create.html'
@@ -169,13 +158,6 @@ class PostUpdateView(OnlyAuthorMixin, UpdateView):
     pk_url_kwarg = 'post_id'
     success_url = reverse_lazy('blog:index')
 
-    def get_object(self, queryset=None):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        if not post.category.is_published and post.author != self.request.user:
-            raise Http404
-        if not post.is_published and post.author != self.request.user:
-            raise Http404
-        return post
 
 
 class PostDeleteView(OnlyAuthorMixin, DeleteView):
@@ -258,7 +240,7 @@ class CategoryListView(ListViewMixin, ListView):
         if not self.category.is_published:
             raise Http404
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get_queryset(self):
         return super().get_queryset().filter(
             pub_date__lte=self._get_cdate(),
@@ -270,5 +252,4 @@ class CategoryListView(ListViewMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
-        print(context['category'])
         return context
