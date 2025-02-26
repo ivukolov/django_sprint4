@@ -25,7 +25,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
-#Параметры страниц с ошибками
+# Параметры страниц с ошибками
 
 CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
 
