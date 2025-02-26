@@ -1,5 +1,4 @@
-from django.urls import include, path, reverse_lazy
-from django.views.generic.edit import CreateView
+from django.urls import path
 
 from . import views
 
