@@ -60,7 +60,7 @@ class OnlyAuthorUpdateMixin(TimeGetMixin):
 
 
 class ListViewMixin(TimeGetMixin):
-    """"Класс для подмешивания спсика постов"""
+    """Класс для подмешивания спсика постов"""
 
     model = Post
     paginate_by = settings.MAX_POSTS_LIMIT
