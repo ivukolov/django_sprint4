@@ -1,30 +1,36 @@
-# django_sprint4
- 
-1 AssertionError: Убедитесь, что на странице категории не отображаются посты, снятые с публикации.
-2 Убедитесь, что на странице категории не отображаются публикации других категорий.
-3 Убедитесь, что страница категории недоступна, если категория снята с публикации.
-4 Убедитесь, что на странице категории не отображаются отложенные публикации.
+Тестовый проект блогикум.
 
-5 ssertionError: Проверьте view-функции приложения `pages`: убедитесь, что для генерации страниц со статусом ответа `{status}` используется шаблон `pages/{fname}`
-E           assert '404.html' in "from django.views.generic import TemplateView\n\n\nclass About(TemplateView):\n\n    template_name = 'pages/about.html'\n\n\nclass Rules(TemplateView):\n\n    template_name = 'pages/rules.html'\n"
-E            +  where "from django.views.generic import TemplateView\n\n\nclass About(TemplateView):\n\n    template_name = 'pages/about.html'\n\n\nclass Rules(TemplateView):\n\n    template_name = 'pages/rules.html'\n" = <function getsource at 0x7fbfa4173d80>(<module 'pages.views' from '/home/i.vukolov@vrgaz.ru/Документы/Dev/Jango/django_sprint4/blogicum/pages/views.py'>)
-E            +    where <function getsource at 0x7fbfa4173d80> = inspect.getsource
+Построен на Django , под капотом использует CBV.
 
-6 AssertionError: Убедитесь, что подключены маршруты для работы с пользователями из `django.contrib.auth.urls`.
-_________________________
-7 self = <blog.views.UserUpdateView object at 0x7fbfa0d78f10>
+Стэк установленных библиотек:
+        asgiref==3.5.2
+        attrs==22.2.0
+        Django==3.2.16
+        django-bootstrap5==22.2
+        Faker==12.0.1
+        flake8==5.0.4
+        flake8-docstrings==1.7.0
+        iniconfig==2.0.0
+        mccabe==0.7.0
+        mixer==7.2.2
+        packaging==23.0
+        pep8-naming==0.13.3
+        Pillow==9.3.0
+        pluggy==1.0.0
+        py==1.11.0
+        pycodestyle==2.9.1
+        pyflakes==2.5.0
+        pytest==7.1.3
+        pytest-django==4.5.2
+        python-dateutil==2.8.2
+        pytz==2022.7
+        six==1.16.0
+        sqlparse==0.4.3
+        tomli==2.0.1
+        yapf==0.32.0
+        beautifulsoup4==4.11.2
+        django-debug-toolbar==3.8.1
 
-    def get_success_url(self):
-        return reverse_lazy(
->           'blog:profile', kwargs={'username': self.username}
-        )
-E       AttributeError: 'UserUpdateView' object has no attribute 'username'
+Тестовый проект для обучения. Позволяет публиковать посты, классифицировать их на категории  и оставлять комментарии к ним.
+Аутентификация и авторизация реализована базовыми методами Django с минимальными изменениями.
 
-_______________
-8 self = <blog.views.UserUpdateView object at 0x7fbfa0d78f10>
-
-    def get_success_url(self):
-        return reverse_lazy(
->           'blog:profile', kwargs={'username': self.username}
-        )
-E       AttributeError: 'UserUpdateView' object has no attribute 'username'
