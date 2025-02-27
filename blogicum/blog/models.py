@@ -21,14 +21,16 @@ class Post(MetaModel):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор публикации'
+        verbose_name='Автор публикации',
+        related_name='posts'
     )
     location = models.ForeignKey(
         'Location',
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name='Местоположение'
+        verbose_name='Местоположение',
+        related_name='posts'
     )
     category = models.ForeignKey(
         'Category',
@@ -88,13 +90,23 @@ class Location(MetaModel):
 
 class Comment(models.Model):
     text = models.TextField('Текст коментария')
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор комментария',
+    )
     post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name='comments'
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Комменатрий к посту',
     )
 
     class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
 
     def get_absolute_url(self):
