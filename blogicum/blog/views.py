@@ -1,24 +1,17 @@
-from django.shortcuts import get_object_or_404
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
 from django.conf import settings
-from django.http import Http404
-from django.views.generic import (
-    DetailView,
-    CreateView,
-    ListView,
-    UpdateView,
-    DeleteView
-)
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count
-from django.contrib.auth.mixins import (UserPassesTestMixin,
-                                        LoginRequiredMixin,)
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 
-from . models import Post, Comment, Category
-from . forms import PostForm, CommentForm
 from users.forms import BlogicumUserChangeForm
+from .forms import CommentForm, PostForm
+from .models import Category, Comment, Post
 
 BlogicumUser = get_user_model()
 
