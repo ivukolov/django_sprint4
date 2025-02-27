@@ -20,19 +20,27 @@ from . models import Post, Comment, Category
 from . forms import PostForm, CommentForm
 from users.forms import BlogicumUserChangeForm
 
-# Получаем модель пользователя.
 BlogicumUser = get_user_model()
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):
-    """Класс для подмешивания проверки доступа"""
+    """Класс для подмешивания проверки доступа."""
 
     def test_func(self):
-        object = self.get_object()
-        return object.author == self.request.user
+        _obj = self.get_object()
+        return _obj.author == self.request.user
 
     def handle_no_permission(self):
         return redirect('blog:post_detail', post_id=self.kwargs.get('post_id'))
+
+
+class PostRedirectMixin:
+    """Миксин для lazy redirect по индексу."""
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}
+        )
 
 
 class TimeGetMixin:
@@ -43,11 +51,10 @@ class TimeGetMixin:
 
 
 class OnlyAuthorUpdateMixin(TimeGetMixin):
-    """Миксин для подмешивания проверки авторства и валидности данных"""
+    """Миксин для подмешивания проверки авторства и валидности данных."""
 
     def get_object(self, queryset=None):
         obj = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        print(obj.category.is_published)
         if obj.author == self.request.user:
             return obj
         if (
@@ -60,7 +67,7 @@ class OnlyAuthorUpdateMixin(TimeGetMixin):
 
 
 class ListViewMixin(TimeGetMixin):
-    """Класс для подмешивания спсика постов"""
+    """Класс для подмешивания спсика постов."""
 
     model = Post
     paginate_by = settings.MAX_POSTS_LIMIT
@@ -74,27 +81,27 @@ class ListViewMixin(TimeGetMixin):
 
 
 class ProfileDetailView(ListViewMixin, ListView):
-    """Класс для отображения страницы пользователя"""
+    """Класс для отображения страницы пользователя."""
 
-    user_model = None
+    user_obj = None
     template_name = 'blog/profile.html'
 
     def dispatch(self, request, *args, **kwargs):
-        self.user_model = get_object_or_404(
+        self.user_obj = get_object_or_404(
             BlogicumUser, username=kwargs['username'])
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return super().get_queryset().filter(author=self.user_model.id)
+        return super().get_queryset().filter(author=self.user_obj.id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['profile'] = self.user_model
+        context['profile'] = self.user_obj
         return context
 
 
 class PostCreateView(LoginRequiredMixin, CreateView,):
-    """Класс для создания постов"""
+    """Класс для создания постов."""
 
     model = Post
     form_class = PostForm
@@ -106,7 +113,7 @@ class PostCreateView(LoginRequiredMixin, CreateView,):
 
 
 class IndexListView(OnlyAuthorUpdateMixin, ListViewMixin, ListView):
-    """Класс для представления главной страницы"""
+    """Класс для представления главной страницы."""
 
     template_name = 'blog/index.html'
 
@@ -119,7 +126,7 @@ class IndexListView(OnlyAuthorUpdateMixin, ListViewMixin, ListView):
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
-    """Класс для обновление страницы пользователя"""
+    """Класс для обновление страницы пользователя."""
 
     model = BlogicumUser
     form_class = BlogicumUserChangeForm
@@ -135,7 +142,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class PostDetailView(OnlyAuthorUpdateMixin, DetailView):
-    """Класс для развёрнутого представения поста"""
+    """Класс для развёрнутого представения поста."""
 
     model = Post
     template_name = 'blog/detail.html'
@@ -152,7 +159,7 @@ class PostDetailView(OnlyAuthorUpdateMixin, DetailView):
 
 
 class PostUpdateView(OnlyAuthorUpdateMixin, OnlyAuthorMixin, UpdateView):
-    """Класс для измения постов"""
+    """Класс для измения постов."""
 
     template_name = 'blog/create.html'
     model = Post
@@ -162,7 +169,7 @@ class PostUpdateView(OnlyAuthorUpdateMixin, OnlyAuthorMixin, UpdateView):
 
 
 class PostDeleteView(OnlyAuthorMixin, DeleteView):
-    """Класс для удаления постов"""
+    """Класс для удаления постов."""
 
     template_name = 'blog/create.html'
     model = Post
@@ -175,8 +182,8 @@ class PostDeleteView(OnlyAuthorMixin, DeleteView):
         return context
 
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    """Класс для создания комментариев к посту"""
+class CommentCreateView(PostRedirectMixin, LoginRequiredMixin, CreateView):
+    """Класс для создания комментариев к посту."""
 
     post_model = None
     model = Comment
@@ -192,42 +199,28 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         form.instance.post = self.post_model
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse_lazy(
-            'blog:post_detail', kwargs={'post_id': self.post_model.id}
-        )
 
 
-class CommentUpdateView(OnlyAuthorMixin, UpdateView):
-    """Класс редактирования комментария"""
+class CommentUpdateView(PostRedirectMixin, OnlyAuthorMixin, UpdateView):
+    """Класс редактирования комментария."""
 
     template_name = 'blog/comment.html'
     model = Comment
     form_class = CommentForm
     pk_url_kwarg = 'comment_id'
 
-    def get_success_url(self):
-        return reverse_lazy(
-            'blog:post_detail', kwargs={'post_id': self.object.post.id}
-        )
 
-
-class CommentDeleteView(OnlyAuthorMixin, DeleteView):
-    """Класс удаления комментария"""
+class CommentDeleteView(PostRedirectMixin, OnlyAuthorMixin, DeleteView):
+    """Класс удаления комментария."""
 
     template_name = 'blog/comment.html'
     model = Comment
     form_class = CommentForm
     pk_url_kwarg = 'comment_id'
-
-    def get_success_url(self):
-        return reverse_lazy(
-            'blog:post_detail', kwargs={'post_id': self.object.post.id}
-        )
 
 
 class CategoryListView(ListViewMixin, ListView):
-    """Класс для отображения категорий"""
+    """Класс для отображения категорий."""
 
     model = Category
     category = None
