@@ -113,3 +113,9 @@ class Comment(models.Model):
         return reverse(
             'blog:profile', kwargs={'username': self.author.username}
         )
+
+    def __str__(self):
+        return (
+            f'Комменатрий к посту {self.post}: '
+            f'{self.text}. Автора: {self.author}'
+        )
