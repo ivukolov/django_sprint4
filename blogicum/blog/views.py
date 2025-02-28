@@ -34,7 +34,7 @@ class OnlyAuthorMixin(UserPassesTestMixin):
 
 
 class PostRedirectMixin:
-    """Миксин для lazy redirect по индексу."""
+    """Миксин для lazy redirect по индексу поста."""
 
     def get_success_url(self):
         return reverse_lazy(
