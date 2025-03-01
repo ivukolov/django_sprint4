@@ -42,14 +42,7 @@ class PostRedirectMixin:
         )
 
 
-class TimeGetMixin:
-    """Миксин для определения текущего времени."""
-
-    def _get_cdate(self):
-        return timezone.now()
-
-
-class OnlyAuthorUpdateMixin(TimeGetMixin):
+class OnlyAuthorUpdateMixin():
     """Миксин для подмешивания проверки авторства и валидности данных."""
 
     def get_object(self, queryset=None):
@@ -57,7 +50,7 @@ class OnlyAuthorUpdateMixin(TimeGetMixin):
         if obj.author == self.request.user:
             return obj
         if (
-            obj.pub_date <= self._get_cdate()
+            obj.pub_date <= timezone.now()
             and obj.is_published
             and obj.category.is_published
         ):
@@ -65,7 +58,7 @@ class OnlyAuthorUpdateMixin(TimeGetMixin):
         raise Http404
 
 
-class ListViewMixin(TimeGetMixin):
+class ListViewMixin():
     """Класс для подмешивания спсика постов."""
 
     model = Post
@@ -118,7 +111,7 @@ class IndexListView(OnlyAuthorUpdateMixin, ListViewMixin, ListView):
 
     def get_queryset(self):
         return super().get_queryset().filter(
-            pub_date__lte=self._get_cdate(),
+            pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True
         )
@@ -233,7 +226,7 @@ class CategoryListView(ListViewMixin, ListView):
 
     def get_queryset(self):
         return super().get_queryset().filter(
-            pub_date__lte=self._get_cdate(),
+            pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True,
             category=self.category
