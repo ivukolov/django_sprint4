@@ -1,6 +1,7 @@
-from django.views.generic import TemplateView
-from django.shortcuts import render
 from http import HTTPStatus
+
+from django.shortcuts import render
+from django.views.generic import TemplateView
 
 
 class About(TemplateView):

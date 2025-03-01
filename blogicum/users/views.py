@@ -1,6 +1,6 @@
-from django.views.generic.edit import CreateView
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView
 
 from .forms import BlogicumUserCreationForm
 

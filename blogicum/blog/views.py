@@ -1,9 +1,15 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.db.models import Count
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+)
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
@@ -16,8 +22,15 @@ from django.views.generic import (
 
 from users.forms import BlogicumUserChangeForm
 
-from .forms import CommentForm, PostForm
-from .models import Category, Comment, Post
+from .forms import (
+    CommentForm,
+    PostForm,
+)
+from .models import (
+    Category,
+    Comment,
+    Post,
+)
 
 BlogicumUser = get_user_model()
 
