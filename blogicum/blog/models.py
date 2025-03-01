@@ -9,46 +9,46 @@ User = get_user_model()
 
 
 class Post(MetaModel):
-    title = models.CharField(
-        'Заголовок', max_length=settings.MAX_HEAD_LENGHT
-    )
-    text = models.TextField('Текст')
+    title = models.CharField("Заголовок", max_length=settings.MAX_HEAD_LENGHT)
+    text = models.TextField("Текст")
     pub_date = models.DateTimeField(
-        'Дата и время публикации',
-        help_text='Если установить дату и время в будущем — '
-        'можно делать отложенные публикации.'
+        "Дата и время публикации",
+        help_text=(
+            "Если установить дату и время в будущем — "
+            "можно делать отложенные публикации."
+        ),
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор публикации',
-        related_name='posts'
+        verbose_name="Автор публикации",
+        related_name="posts",
     )
     location = models.ForeignKey(
-        'Location',
+        "Location",
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name='Местоположение',
-        related_name='posts'
+        verbose_name="Местоположение",
+        related_name="posts",
     )
     category = models.ForeignKey(
-        'Category',
+        "Category",
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name='Категория',
-        related_name='posts'
+        verbose_name="Категория",
+        related_name="posts",
     )
-    image = models.ImageField('Фото', upload_to='birthdays_images', blank=True)
+    image = models.ImageField("Фото", upload_to="birthdays_images", blank=True)
 
     class Meta:
-        verbose_name = 'публикация'
-        verbose_name_plural = 'Публикации'
-        ordering = ('-pub_date',)
+        verbose_name = "публикация"
+        verbose_name_plural = "Публикации"
+        ordering = ("-pub_date",)
 
     def get_absolute_url(self):
         return reverse(
-            'blog:profile', kwargs={'username': self.author.username}
+            "blog:profile", kwargs={"username": self.author.username}
         )
 
     def __str__(self):
@@ -56,20 +56,20 @@ class Post(MetaModel):
 
 
 class Category(MetaModel):
-    title = models.CharField(
-        'Заголовок', max_length=settings.MAX_HEAD_LENGHT
-    )
-    description = models.TextField('Описание')
+    title = models.CharField("Заголовок", max_length=settings.MAX_HEAD_LENGHT)
+    description = models.TextField("Описание")
     slug = models.SlugField(
-        'Идентификатор',
+        "Идентификатор",
         unique=True,
-        help_text='Идентификатор страницы для URL; '
-        'разрешены символы латиницы, цифры, дефис и подчёркивание.'
+        help_text=(
+            "Идентификатор страницы для URL;"
+            "разрешены символы латиницы, цифры, дефис и подчёркивание."
+        ),
     )
 
     class Meta:
-        verbose_name = 'категория'
-        verbose_name_plural = 'Категории'
+        verbose_name = "категория"
+        verbose_name_plural = "Категории"
 
     def __str__(self):
         return self.title
@@ -77,45 +77,45 @@ class Category(MetaModel):
 
 class Location(MetaModel):
     name = models.CharField(
-        'Название места', max_length=settings.MAX_HEAD_LENGHT
+        "Название места", max_length=settings.MAX_HEAD_LENGHT
     )
 
     class Meta:
-        verbose_name = 'местоположение'
-        verbose_name_plural = 'Местоположения'
+        verbose_name = "местоположение"
+        verbose_name_plural = "Местоположения"
 
     def __str__(self):
         return self.name
 
 
 class Comment(models.Model):
-    text = models.TextField('Текст коментария')
-    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
+    text = models.TextField("Текст коментария")
+    created_at = models.DateTimeField("Добавлено", auto_now_add=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор комментария',
+        related_name="comments",
+        verbose_name="Автор комментария",
     )
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Комменатрий к посту',
+        related_name="comments",
+        verbose_name="Комменатрий к посту",
     )
 
     class Meta:
-        verbose_name = 'комментарий'
-        verbose_name_plural = 'Комментарии'
-        ordering = ('created_at',)
-
-    def get_absolute_url(self):
-        return reverse(
-            'blog:profile', kwargs={'username': self.author.username}
-        )
+        verbose_name = "комментарий"
+        verbose_name_plural = "Комментарии"
+        ordering = ("created_at",)
 
     def __str__(self):
         return (
-            f'Комменатрий к посту {self.post}: '
-            f'{self.text}. Автора: {self.author}'
+            f"Комменатрий к посту {self.post}: "
+            f"{self.text}. Автора: {self.author}"
+        )
+
+    def get_absolute_url(self):
+        return reverse(
+            "blog:profile", kwargs={"username": self.author.username}
         )
