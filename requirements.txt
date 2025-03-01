@@ -26,3 +26,5 @@ yapf==0.32.0
 beautifulsoup4==4.11.2
 django-debug-toolbar==3.8.1
 isort==6.0.1
+flake8-django
+black
