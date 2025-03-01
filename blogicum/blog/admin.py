@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-
 from .models import Post, Category, Location, Comment
 
 
+@admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = (
         'title',
@@ -23,6 +23,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = (
         'title',
@@ -35,6 +36,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
 
 
+@admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -44,6 +46,7 @@ class LocationAdmin(admin.ModelAdmin):
     list_filter = ('is_published',)
 
 
+@admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         'text',
@@ -52,9 +55,3 @@ class CommentAdmin(admin.ModelAdmin):
         'post',
     )
     search_fields = ('text',)
-
-
-admin.site.register(Post, PostAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Location, LocationAdmin)
-admin.site.register(Comment, CommentAdmin)
